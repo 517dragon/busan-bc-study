@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>FABCAR Service</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://getbootstrap.com/docs/5.2/assets/css/docs.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h2>Career 이력 조회 페이지</h2><br>
+
+        <form action="/car" method="get">
+            <label for="fname" class="form-label">ID:</label><br>
+            <input type="text" class="form-control" id="userId" name="userId" placeholder=""><br><br>
+            <label for="fname" class="form-label">Career Id:</label><br>
+            <input type="text" class="form-control" id="careerId" name="careerId" placeholder=""><br><br>
+
+            <button id="carrer_history_btn" class="btn btn-outline-secondary">이력 조회</button>
+        </form>
+
+        <p id="query_result"></p>
+        <table class="table table-hover">
+            <tbody id="query_table">
+            </tbody>
+      </table>
+    </div>
+
+</body>
+<script>
+    $("#carrer_history_btn").click(() => {
+        const userId = $("#userId").val();
+        const careerId = $("#careerId").val();
+
+        $.get("/career", {userId, careerId}, (data, status) =>{
+
+          if(data.result == "success"){
+              $("#query_result").empty();
+              $("#query_table").empty();
+              
+              $("#query_result").append('<i class="fa-regular fa-circle-check fa-5x" ></i><br>')
+              const res = JSON.stringify(data);
+              $("#query_result").append(res);
+
+               // table update 
+               $("#query_table").empty();
+
+                $("#query_table").append("<tr><td>Gardian</td><td>"+data.message.projectId+"</td></tr>");
+                $("#query_table").append("<tr><td>RID</td><td>"+data.message.projectName+"</td></tr>");
+                $("#query_table").append("<tr><td>DiagInfo</td><td>"+data.message.period+"</td></tr>");
+                $("#query_table").append("<tr><td>Price</td><td>"+data.message.company+"</td></tr>");
+                $("#query_table").append("<tr><td>Price</td><td>"+data.message.position+"</td></tr>");
+                $("#query_table").append("<tr><td>Price</td><td>"+data.message.role+"</td></tr>");
+                $("#query_table").append("<tr><td>Status</td><td>"+data.message.status+"</td></tr>");
+
+          } else {
+              $("#query_result").empty();
+              const res = JSON.stringify(data);
+              $("#query_result").append('<i class="fa-regular fa-circle-xmark fa-5x"></i><br>')
+              $("#query_result").append(res);
+          }
+      });
+    });
+</script>
+</html>

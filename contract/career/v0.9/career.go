@@ -7,7 +7,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"strconv" // 문자열 -> 내부 변수 ( int, bool, float ) 혹은 반대
 	"time"
 	"log"
 
@@ -20,6 +19,7 @@ type SmartContract struct {  // SmartContract 객체중 구조체
 }
 
 type Career struct { // world state 에 value 에 JSON으로 marshal 되어 저장될 구조체
+	ProjectId	string	`json:"projectId"`
 	ProjectName	string	`json:"projectName"`
 	Period		string	`json:"period"`
 	Company		string	`json:"company"`
@@ -41,30 +41,13 @@ type HistoryQueryResult struct{
 	IsDelete	bool		`json:"isDelete"`
 }
 
-func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error { // 출력을 받는 주체는? 혹은 InitLedger를 수행해주는 주체는? =>  endorser
-	careers := []Career{
-		Career{ProjectName: "busan-project", Period: "2022-12-09", Company: "busan", Position: "SW engineer", Role: "blockchain", Status: "request"},
-	}
-
-	for i, career := range careers {
-		careerAsBytes, _ := json.Marshal(career) // 구조체를 -> marshal -> JSON포맷으로 저장된 [] byte array 
-
-		err := ctx.GetStub().PutState("CAREERS"+strconv.Itoa(i), careerAsBytes) // Key: CAR0~9
-
-		if err != nil {
-			return fmt.Errorf("Failed to put to world state. %s", err.Error())
-		}
-	}
-
-	return nil // error 가 일어나지 않았음을 리턴
-}
-
 func (s *SmartContract) CreateCareer(ctx contractapi.TransactionContextInterface,
 	projectId string, projectName string, period string, company string, position string, role string) error { // 매개변수 5개 넣어주는 주체는? endorser <= application(submitTransaction("CreateCar","CAR10","BMW","420D", "white", "bstudent"))
 	
 	// (TO DO) 오류검증 - 각 매개변수안에 유효값이 들어있는지 검사 
 
 	career := Career{
+		ProjectId: projectId,
 		ProjectName:   projectName,
 		Period:  period,
 		Company: company,
