@@ -86,8 +86,8 @@ app.post('/career', async(req, res)=>{
 app.get('/career', async(req, res)=>{
 
     try{
-        const userId = req.body.userId;
-        const projectId = req.body.projectId;
+        const userId = req.query.userId;
+        const projectId = req.query.projectId;
             
         console.log('/career-get-'+userId+'-'+projectId);
         
@@ -131,25 +131,25 @@ app.get('/career', async(req, res)=>{
 
 });
 
-// /car/tx POST 소유권 이전 ROUTING
-app.post('/car/tx', async(req, res) => {
+// /career/tx POST 소유권 이전 ROUTING
+app.post('/career/tx', async(req, res) => {
 
     try{
         // client로 파라미터 받기
-        const cert = req.body.cert;
-        const carid = req.body.carid;
-        const newowner = req.body.newowner;
+        const userId = req.body.userId;
+        const projectId = req.body.projectId;
+        const selectStatus = req.body.selectStatus;
 
-        console.log('/car/tx-post-'+cert+'-'+carid+'-'+newowner)
+        console.log('/car/tx-post-'+userId+'-'+projectId+'-'+selectStatus)
 
         // 인증서 확인 -> 전달받은 인증서 사용
         const walletPath = path.join(process.cwd(), 'wallet');
         const wallet = await Wallets.newFileSystemWallet(walletPath);
         console.log(`Wallet path: ${walletPath}`);
-        const identity = await wallet.get(cert);
+        const identity = await wallet.get(userId);
 
         if(!identity) {
-            console.log(`An identity for the ${cert} appUser does not exist in the wallet`);
+            console.log(`An identity for the ${userId} appUser does not exist in the wallet`);
             console.log('Run the registerUser.js application before retrying');
 
             const result_obj = JSON.parse('{"result":"fail", "error":"An identity for the user does not exist in the wallet"');
@@ -159,12 +159,12 @@ app.post('/car/tx', async(req, res) => {
 
         // gw -> ch -> cc
         const gateway = new Gateway();
-        await gateway.connect(ccp, { wallet, identity: cert, discovery: { enabled: true, asLocalhost: true } });
+        await gateway.connect(ccp, { wallet, identity: userId, discovery: { enabled: true, asLocalhost: true } });
 
-        const network = await gateway.getNetwork('mychannel');
-        const contract = network.getContract('fabcar');
+        const network = await gateway.getNetwork('busanchannel');
+        const contract = network.getContract('career');
 
-        await contract.submitTransaction('changeCarOwner', carid, newowner);
+        await contract.submitTransaction('ChangeStatus', projectId, selectStatus);
         console.log('Transaction has been submitted');
         await gateway.disconnect();
 
@@ -179,23 +179,22 @@ app.post('/car/tx', async(req, res) => {
 
 });
 
+// /career/history GET 모든 이력 조회
+app.get('/career/history', async(req, res)=> {
 
-// /car/history GET 차량정보 이력 라우팅
-app.get('/car/history', async(req, res)=> {
     try{
-        const cert = req.query.cert;
-        const carid = req.query.carid;
+        const userId = req.query.userId;
 
-        console.log('/car/history-get-' + cert + '-' + carid);
+        console.log('/career/history-get-' + userId);
 
         // 인증서 확인 -> (TO DO) 전달받은 인증서 사용하기
         const walletPath = path.join(process.cwd(), 'wallet');
         const wallet = await Wallets.newFileSystemWallet(walletPath);
         console.log(`Wallet path: ${walletPath}`);
-        const identity = await wallet.get(cert);
+        const identity = await wallet.get(userId);
 
         if (!identity) {
-            console.log(`An identity for the user ${cert} does not exist in the wallet`);
+            console.log(`An identity for the user ${userId} does not exist in the wallet`);
             console.log('Run the registerUser.js application before retrying');
             const result_obj = JSON.parse('{"result":"fail", "error":"An identity for the user does not exist in the wallet"}');
             res.send(result_obj);
@@ -204,11 +203,12 @@ app.get('/car/history', async(req, res)=> {
 
         // GW -> CH -> CC
         const gateway = new Gateway();
-        await gateway.connect(ccp, { wallet, identity: cert, discovery: { enabled: true, asLocalhost: true } });
-        const network = await gateway.getNetwork('mychannel');
-        const contract = network.getContract('fabcar');
-
-        const result = await contract.evaluateTransaction('GetHistory', carid);
+        await gateway.connect(ccp, { wallet, identity: userId, discovery: { enabled: true, asLocalhost: true } });
+        const network = await gateway.getNetwork('busanchannel');
+        const contract = network.getContract('career');
+        
+        // const result = await contract.evaluateTransaction('GetHistory', userId);
+        const result = await contract.evaluateTransaction('QueryAllCareer');
         console.log('Transaction has been evaluted');
         await gateway.disconnect();
 

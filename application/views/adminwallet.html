@@ -10,7 +10,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css"
+        integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 
 <body>
@@ -19,14 +21,15 @@
 
         <h2>Career 관리자 인증서 생성 페이지</h2><br>
 
-            <label for="fname" class="form-label">ID:</label><br>
-            <input type="text" class="form-control" id="id" name="id" placeholder="enter id"><br><br>
+        <label for="fname" class="form-label">ID:</label><br>
+        <input type="text" class="form-control" id="id" name="id" placeholder="enter id"><br><br>
 
-            <label for="lname" class="form-label">Password:</label><br>
-            <input type="password" class="form-control" id="pw" name="pw" placeholder="enter password"><br><br>
+        <label for="lname" class="form-label">Password:</label><br>
+        <input type="password" class="form-control" id="pw" name="pw" placeholder="enter password"><br><br>
 
-            <button class="btn btn-success" id="create_btn">관리자 인증서 생성</button>
-            <p id="create_result"></p>
+        <button class="btn btn-primary" id="create_btn">관리자 인증서 생성</button>
+        <button class="btn btn-secondary" onclick="history.back()">뒤로</button>
+        <p id="create_result"></p>
 
     </div>
 
@@ -37,13 +40,13 @@
         const adminid = $("#id").val();
         const adminpw = $("#pw").val();
 
-        $.post("/admin", {id:adminid, pw:adminpw}, (data, status) => {
-            if(data.result == "success"){
+        $.post("/admin", { id: adminid, pw: adminpw }, (data, status) => {
+            if (data.result == "success") {
                 $("#create_result").empty();
                 $("#create_result").append('<i class="fa-solid fa-toggle-on fa-5x"></i>');
                 const res = JSON.stringify(data);
                 $("#create_result").append(res);
-            }else{
+            } else {
                 $("#create_result").empty();
                 $("#create_result").append('<i class="fa-solid fa-toggle-off fa-5x"></i>');
                 const res = JSON.stringify(data);

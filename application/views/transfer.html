@@ -3,14 +3,16 @@
 
 <head>
     <meta charset="utf-8">
-    <title>FABCAR Service</title>
+    <title>Career Service</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://getbootstrap.com/docs/5.2/assets/css/docs.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css"
+        integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
 
 </head>
 
@@ -18,40 +20,93 @@
 
     <div class="container">
 
-        <h2>FABCAR 차 소유권 이전 페이지</h2><br>
+        <h2>Career 이력 승인 페이지</h2><br>
 
-            <label for="fname" class="form-label">Certificate:</label><br>
-            <input type="text" class="form-control" id="cert" name="cert" placeholder=""><br><br>
+        <label for="userId" class="form-label">ID:</label><br>
+        <input type="text" class="form-control" id="userId" name="userId" placeholder=""><br><br>
+        <label for="projectId" class="form-label">Project Id:</label><br>
+        <input type="text" class="form-control" id="projectId" name="projectId" placeholder=""><br><br>
 
-            <label for="lname" class="form-label">Car ID:</label><br>
-            <input type="text" class="form-control" id="carid" name="carid" placeholder=""><br><br>
+        <button id="carrer_history_btn" class="btn btn-success">상태 조회</button><br><br>
 
-            <label for="lname" class="form-label">New Owner:</label><br>
-            <input type="text" class="form-control" id="newowner" name="newowner" placeholder=""><br><br>
+        <p id="query_result"></p>
+        <table class="table table-hover">
+            <tbody id="query_table">
+            </tbody>
+        </table>
 
-            <button id="transfer_btn" class="btn btn-outline-warning">소유권 이전</button>
-    
-            <p id="transfer_result"></p>
+        <select class="form-select" id="select_status" disabled>
+            <option value="none" selected>선택</option>
+            <option value="approval">승인</option>
+            <option value="return">반려</option>
+        </select><br><br>
+
+        <button id="transfer_btn" class="btn btn-primary">상태 변경</button>
+        <button class="btn btn-secondary" onclick="history.back()">뒤로</button>
     </div>
 </body>
 
 <script>
-    $("#transfer_btn").click(() => {
-        const cert = $("#cert").val();
-        const carid = $("#carid").val();
-        const newowner = $("#newowner").val();
+    $("#carrer_history_btn").click(() => {
+        const userId = $("#userId").val();
+        const projectId = $("#projectId").val();
 
-        $.post("/car/tx", {cert, carid, newowner}, (data, status) => {
-            if(data.result == "success"){
-                $("#transfer_result").empty();
-                $("#transfer_result").append('<i class="fa-solid fa-toggle-on fa-5x"></i>');
+        $.get("/career", { userId, projectId }, (data, status) => {
+
+            if (data.result == "success") {
+                $("#query_result").empty();
+                $("#query_table").empty();
                 const res = JSON.stringify(data);
-                $("#transfer_result").append(res);
-            }else{
-                $("#transfer_result").empty();
-                $("#transfer_result").append('<i class="fa-solid fa-toggle-off fa-5x"></i>');
+
+                $("#query_table").empty();
+                $("#query_table").append("<tr><th scope='row'>Project Id</th><td>" + data.message.projectId + "</td></tr>");
+                $("#query_table").append("<tr><th scope='row'>Project Name</th><td>" + data.message.projectName + "</td></tr>");
+                $("#query_table").append("<tr><th scope='row'>Period</th><td>" + data.message.period + "</td></tr>");
+                $("#query_table").append("<tr><th scope='row'>Company</th><td>" + data.message.company + "</td></tr>");
+                $("#query_table").append("<tr><th scope='row'>Position</th><td>" + data.message.position + "</td></tr>");
+                $("#query_table").append("<tr><th scope='row'>Role</th><td>" + data.message.role + "</td></tr>");
+                $("#query_table").append("<tr><th scope='row'>Status</th><td>" + data.message.status + "</td></tr>");
+
+                if (data.message.status == "request") {
+                    $("#select_status").attr("disabled", false);
+                } else {
+                    $("#select_status").attr("disabled", true);
+                }
+
+            } else {
+                $("#select_status").attr("disabled", true);
+                $("#query_result").empty();
+                $("#query_table").empty();
                 const res = JSON.stringify(data);
-                $("#transfer_result").append(res);
+                $("#query_result").append(res);
+            }
+        });
+    });
+
+    $("#transfer_btn").click(() => {
+        const userId = $("#userId").val();
+        const projectId = $("#projectId").val();
+
+        var isDisabled = $("#select_status").attr("disabled");
+        if (isDisabled == "disabled") {
+            alert("이력 조회가 필요합니다")
+            return;
+        }
+
+        const selectStatus = $("#select_status option:selected").val();
+        if (selectStatus == "none") {
+            alert("승인 여부를 선택해 주세요")
+            return;
+        }
+
+        alert(selectStatus)
+
+        $.post("/career/tx", { userId, projectId, selectStatus }, (data, status) => {
+            alert(data)
+            if (data.result == "success") {
+                alert("검토 완료")
+            } else {
+                alert("검토 실패")
             }
         })
     });
